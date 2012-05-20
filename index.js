@@ -44,6 +44,14 @@ var clean = function(valid, params) {
 
 
 var parse = {
+  boolean: function(val) {
+    var bool
+    val = val || ''
+    if (val in { false: 0, 0: 0 }) bool = false
+    else if (val in { true: 1, 1: 1 }) bool = true
+    else if (val !== '') return { err: 'is not allowed' }
+    return { val: bool }
+  },
   number: function(val) {
     var num = Number(val)
     if (isNaN(num)) {
