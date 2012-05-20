@@ -10,7 +10,7 @@ describe('clean()', function() {
     var valid = { num: { default: 10 } }
 
     it('should parse a numeric value', function(done) {
-      var cleaned = caretaker.clean({ num: '7' }, valid)
+      var cleaned = caretaker.clean(valid, { num: '7' })
       cleaned.should.have.property('status', 'ok')
       cleaned.should.have.property('params')
       cleaned.params.should.have.property('num', 7)
@@ -18,24 +18,24 @@ describe('clean()', function() {
     })
     
     it('should return the default value if not present', function(done) {
-      var cleaned = caretaker.clean({}, valid)
+      var cleaned = caretaker.clean(valid, {})
       cleaned.should.have.property('status', 'ok')
       cleaned.should.have.property('params')
       cleaned.params.should.have.property('num', 10)
       done()
     })
     
-    it('should not be present', function(done) {
+    it('should not be present if not supplied and no default is set', function(done) {
       var noDefault = { num: { type: 'number' } }
-      var cleaned = caretaker.clean({}, noDefault)
+      var cleaned = caretaker.clean(noDefault, {})
       cleaned.should.have.property('status', 'ok')
       cleaned.should.have.property('params')
-      cleaned.params.shouldnt.have.property('num')
+      cleaned.params.should.not.have.property('num')
       done()
     })
     
     it('should send an error when the value is not numeric', function(done) {
-      var cleaned = caretaker.clean({ num: 'abc' }, valid)
+      var cleaned = caretaker.clean(valid, { num: 'abc' })
       cleaned.should.have.property('status', 'error')
       cleaned.should.have.property('errors')
       done()
@@ -43,7 +43,7 @@ describe('clean()', function() {
     
     it('should return an error if required and not present', function(done) {
       var required = { num: { type: 'number', required: true } }
-      var cleaned = caretaker.clean({}, required)
+      var cleaned = caretaker.clean(required, {})
       cleaned.should.have.property('status', 'error')
       cleaned.should.have.property('errors')
       done()
