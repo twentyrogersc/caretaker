@@ -22,13 +22,13 @@ var clean = function(valid, params) {
       }
     }
     
-    var parsed = parseF(params[field])
+    var parsed = parseF(params[field], val.match)
     if (parsed.err !== undefined) {
       addError(field, parsed.err)
     }
     else {
       if (parsed.val === undefined) {
-        if (val.required === true) addError(field, 'required')
+        if (val.required === true) addError(field, 'is required')
         else if (val.default) data[field] = val.default
       }
       else {
@@ -48,11 +48,19 @@ var parse = {
     var num = Number(val)
     if (isNaN(num)) {
       if (val !== undefined) {
-        return { err: 'not a number' }
+        return { err: 'is not a number' }
       }
       num = undefined
     }
     return { val: num }
+  },
+  string: function(val, match) {
+    var str = String(val)
+    if (match !== undefined && str.match(match) === null) {
+      return { err: 'is not allowed' }
+    }
+    str = val === undefined ? undefined : str
+    return { val: str }
   }
 }
 
