@@ -13,7 +13,7 @@ var clean = function(valid, params) {
   for (var field in valid) {
     var parseF
     var val = valid[field]
-    var p = [ val.type, typeof val.default ]
+    var p = [ val.type, typeof val.default, 'default' ]
     for (var y=0; y<p.length; y++) {
       var type = p[y]
       if (type in parse) {
@@ -51,6 +51,9 @@ var parse = {
     else if (val in { true: 1, 1: 1 }) bool = true
     else if (val !== '') return { err: 'is not allowed' }
     return { val: bool }
+  },
+  default: function(val) {
+    return val
   },
   number: function(val) {
     var num = Number(val)
