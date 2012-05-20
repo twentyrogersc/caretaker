@@ -1,6 +1,4 @@
-
-
-var clean = function(valid, params) {
+module.exports.clean = function(valid, params) {
   var data = {}
   var errors = {}
   var rtn = { status: 'ok' }
@@ -11,11 +9,11 @@ var clean = function(valid, params) {
   }
   
   for (var field in valid) {
-    var parseF
     var val = valid[field]
-    var p = [ val.type, typeof val.default, 'default' ]
-    for (var y=0; y<p.length; y++) {
-      var type = p[y]
+    var parseF = parse.default
+    var types = [ val.type, typeof val.default ]
+    for (var x=0; x<types.length; x++) {
+      var type = types[x]
       if (type in parse) {
         parseF = parse[type]
         break
@@ -23,18 +21,10 @@ var clean = function(valid, params) {
     }
     
     var parsed = parseF(params[field], val.match)
-    if (parsed.err !== undefined) {
-      addError(field, parsed.err)
-    }
-    else {
-      if (parsed.val === undefined) {
-        if (val.required === true) addError(field, 'is required')
-        else if (val.default) data[field] = val.default
-      }
-      else {
-        data[field] = parsed.val
-      }
-    }    
+    if (parsed.err) addError(field, parsed.err)
+    else if (parsed.val !== undefined) data[field] = parsed.val
+    else if (val.required === true) addError(field, 'is required')
+    else if (val.default) data[field] = val.default
   }
   
   if (rtn.status === 'ok') rtn.params = data
@@ -45,37 +35,27 @@ var clean = function(valid, params) {
 
 var parse = {
   boolean: function(val) {
-    var bool
-    val = val || ''
-    if (val in { false: 0, 0: 0 }) bool = false
-    else if (val in { true: 1, 1: 1 }) bool = true
-    else if (val !== '') return { err: 'is not allowed' }
-    return { val: bool }
+    var bool = { val: val }
+    if (bool.val in { false: 0, 0: 0 }) bool.val = false
+    else if (bool.val in { true: 1, 1: 1 }) bool.val = true
+    else if (bool.val !== undefined) bool.err = 'is not allowed'
+    return bool
   },
   default: function(val) {
-    return val
+    return { val: val }
   },
   number: function(val) {
-    var num = Number(val)
-    if (isNaN(num)) {
-      if (val !== undefined) {
-        return { err: 'is not a number' }
-      }
-      num = undefined
+    var num = { val: Number(val) }
+    if (isNaN(num.val)) {
+      if (val) num.err = 'is not a number'
+      else num.val = undefined
     }
-    return { val: num }
+    return num
   },
   string: function(val, match) {
-    var str = String(val)
-    if (match !== undefined && str.match(match) === null) {
-      return { err: 'is not allowed' }
-    }
-    str = val === undefined ? undefined : str
-    return { val: str }
+    var str = { val: String(val) }
+    if (match && str.val.match(match) === null) str.err = 'is not allowed'
+    else str.val = val === undefined ? undefined : str.val
+    return str
   }
-}
-
-
-module.exports = {
-  clean: clean
 }
